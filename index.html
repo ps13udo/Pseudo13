@@ -47,7 +47,7 @@ html,body{
   transform:translate(-50%,-50%);
   white-space:pre;
   text-align:center;
-  font-size:2rem;
+  font-size:3rem; /* larger initial text */
   z-index:10;
 }
 .cursor::after{
@@ -61,7 +61,7 @@ html,body{
   display:none;
   padding:10px;
   white-space:pre-wrap;
-  font-size:1rem;
+  font-size:1.2rem;
   line-height:1.2;
   position:absolute;
   width:100%;
@@ -76,7 +76,7 @@ html,body{
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  font-size:6rem;
+  font-size:8rem; /* bigger overlay */
   font-weight:bold;
   z-index:50;
   pointer-events:none;
@@ -85,12 +85,13 @@ html,body{
 /* Popups */
 .popup{
   position:absolute;
-  width:320px;
-  height:160px;
+  width:360px;
+  height:auto;
   background:#f5f5f5;
   border:2px solid #888;
   box-shadow:6px 6px 12px #000;
   z-index:100;
+  padding-bottom:10px;
 }
 .popup .title{
   background:#003cff;
@@ -104,6 +105,39 @@ html,body{
   font-weight:bold;
   color:black;
   text-align:center;
+  white-space:pre;
+}
+
+/* Countdown + loading container */
+#rebootContainer{
+  display:none;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  width:90vw;
+  color:#00ff00;
+  font-family:"Courier New", monospace;
+}
+#loadingBarContainer{
+  width:100%;
+  background:black;
+  height:40px;
+  margin-top:20px;
+}
+#loadingBar{
+  display:block;
+  background:green;
+  height:100%;
+  width:0%;
+}
+#loadingText{
+  font-size:4rem;
+  margin-top:20px;
+}
+#face{
+  font-size:6rem;
 }
 </style>
 </head>
@@ -114,6 +148,15 @@ html,body{
 <div id="center" class="cursor"></div>
 <div id="terminal"></div>
 <div id="overlay">OH NO</div>
+<div id="rebootContainer">
+  <div id="smiley">
+    <pre id="face"></pre>
+  </div>
+  <div id="loadingBarContainer">
+    <div id="loadingBar"></div>
+  </div>
+  <div id="loadingText"></div>
+</div>
 
 <script>
 /* ================= AUDIO ================= */
@@ -131,9 +174,14 @@ function type(){beep(1400,0.03,0.05);}
 const center=document.getElementById("center");
 const terminal=document.getElementById("terminal");
 const overlay=document.getElementById("overlay");
+const rebootContainer=document.getElementById("rebootContainer");
+const faceEl=document.getElementById("face");
+const loadingBar=document.getElementById("loadingBar");
+const loadingText=document.getElementById("loadingText");
+
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-/* ================= SCREEN JITTER ================= */
+/* ================= SCREEN JITTER ONLY ON BODY ================= */
 setInterval(()=>{
   document.body.style.transform=
     `translate(${Math.random()*3-1.5}px,${Math.random()*3-1.5}px)
@@ -163,12 +211,12 @@ async function typeDelete(text){
   for(const c of text){
     center.textContent+=c;
     type();
-    await sleep(30);
+    await sleep(60); // slower typing
   }
   await sleep(400);
   while(center.textContent.length){
     center.textContent=center.textContent.slice(0,-1);
-    await sleep(20);
+    await sleep(40);
   }
 }
 
@@ -231,16 +279,37 @@ async function meltdown(){
 }
 
 /* ================= POPUPS ================= */
+const happyFace=
+`      _____
+     /     \\
+    |  o o  |
+    |   ^   |
+    | \\___/ |
+     \\_____/`;
+
+const sadFace=
+`      _____
+     /     \\
+    |  o o  |
+    |   ^   |
+    | /___\\ |
+     \\_____/`;
+
 function popup(){
   const p=document.createElement("div");
   p.className="popup";
   p.style.top=Math.random()*70+"%";
   p.style.left=Math.random()*70+"%";
+
+  // Randomly choose happy or sad for popup
+  const face = Math.random()<0.5 ? happyFace : sadFace;
+
   p.innerHTML=`
     <div class="title">Pseudo Error</div>
     <div class="content">
       A PSEUDO ERROR HAS OCCURRED.<br>
       LUXURY FILES CORRUPTED.<br>
+      ${face}<br>
       DO NOT PANIC.
     </div>`;
   document.body.appendChild(p);
@@ -266,24 +335,19 @@ function drag(el){
 
 /* ================= REBOOT ================= */
 async function reboot(){
-  terminal.textContent="";
+  terminal.style.display="none";
+  rebootContainer.style.display="block";
   let percent=0;
   while(percent<100){
-    let bars=Math.floor(percent/3);
-    terminal.textContent=
-      "SYSTEM REBOOTING\n\n["+
-      "█".repeat(bars)+
-      " ".repeat(33-bars)+
-      "] "+Math.floor(percent)+"%";
-    percent+=Math.random()*2;
+    const bars=Math.floor((percent/100)*100);
+    loadingBar.style.width=bars+"%";
+    loadingText.textContent=Math.floor(percent)+"%";
+    percent+=Math.random()*1.5;
     await sleep(160);
     if(percent>99){
-      terminal.textContent+="\n\nestimated time 6 hours 43 minutes";
+      loadingText.textContent="estimated time 6 hours 43 minutes";
       await sleep(3000);
-      terminal.textContent=terminal.textContent.replace(
-        "estimated time 6 hours 43 minutes",
-        "just kidding"
-      );
+      loadingText.textContent="just kidding";
       await sleep(3000);
       break;
     }
@@ -293,7 +357,6 @@ async function reboot(){
 
 /* ================= FACE ================= */
 async function face(){
-  terminal.textContent="";
   const happy=
 `   _____
   /     \\
@@ -309,31 +372,28 @@ async function face(){
  | /___\\ |
   \\_____/`;
 
-  terminal.textContent=happy;
+  faceEl.textContent=happy;
   await sleep(700);
-  terminal.textContent=sad;
+  faceEl.textContent=sad;
   await sleep(500);
-  terminal.textContent=happy;
+  faceEl.textContent=happy;
   await sleep(700);
   await countdown();
 }
 
 /* ================= COUNTDOWN ================= */
 async function countdown(){
-  document.body.innerHTML="";
-  const c=document.createElement("div");
-  c.style.position="absolute";
-  c.style.top="50%";
-  c.style.left="50%";
-  c.style.transform="translate(-50%,-50%)";
-  c.style.fontSize="6rem";
-  document.body.appendChild(c);
+  rebootContainer.innerHTML=""; // clear everything except container
+  const countdownEl=document.createElement("div");
+  countdownEl.style.fontSize="6rem";
+  countdownEl.style.textAlign="center";
+  rebootContainer.appendChild(countdownEl);
 
   const drop=new Date("2026-03-13T00:00:00").getTime();
   setInterval(()=>{
     const d=drop-Date.now();
-    if(d<=0){c.textContent="00 : 00 : 00 : 00";return;}
-    c.textContent=
+    if(d<=0){countdownEl.textContent="00 : 00 : 00 : 00";return;}
+    countdownEl.textContent=
       String(Math.floor(d/86400000)).padStart(2,"0")+" : "+
       String(Math.floor(d/3600000)%24).padStart(2,"0")+" : "+
       String(Math.floor(d/60000)%60).padStart(2,"0")+" : "+

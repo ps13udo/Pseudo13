@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PSEUDO13</title>
+
+<!--
+PSEUDO13 ARG NOTE:
+Fragments assemble.
+Nothing important is announced.
+Only weight opens concrete.
+DM what you find.
+-->
+
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:black;
+  overflow:hidden;
+  font-family:"Courier New", monospace;
+  color:#00ff00;
+}
+
+/* CRT scanlines */
+#scanlines{
+  position:fixed;
+  inset:0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.02) 0px,
+      rgba(255,255,255,0.02) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+  pointer-events:none;
+  z-index:999;
+}
+
+/* Centered typing */
+#center{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  white-space:pre;
+  text-align:center;
+  font-size:2rem;
+  z-index:10;
+}
+.cursor::after{
+  content:"_";
+  animation:blink 1s infinite;
+}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+/* Terminal dump */
+#terminal{
+  display:none;
+  padding:10px;
+  white-space:pre-wrap;
+  font-size:1rem;
+  line-height:1.2;
+  position:absolute;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+
+/* Overlay */
+#overlay{
+  display:none;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-size:6rem;
+  font-weight:bold;
+  z-index:50;
+  pointer-events:none;
+}
+
+/* Popups */
+.popup{
+  position:absolute;
+  width:320px;
+  height:160px;
+  background:#f5f5f5;
+  border:2px solid #888;
+  box-shadow:6px 6px 12px #000;
+  z-index:100;
+}
+.popup .title{
+  background:#003cff;
+  color:white;
+  padding:4px;
+  cursor:move;
+}
+.popup .content{
+  padding:8px;
+  font-size:0.85rem;
+  font-weight:bold;
+  color:black;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div id="scanlines"></div>
+<div id="center" class="cursor"></div>
+<div id="terminal"></div>
+<div id="overlay">OH NO</div>
+
+<script>
+/* ================= AUDIO ================= */
+const ctx=new(window.AudioContext||window.webkitAudioContext)();
+function beep(f=1200,t=0.04,v=0.08){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+t);
+}
+function undo(){beep(800,0.2,0.1);}
+function type(){beep(1400,0.03,0.05);}
+
+/* ================= ELEMENTS ================= */
+const center=document.getElementById("center");
+const terminal=document.getElementById("terminal");
+const overlay=document.getElementById("overlay");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ================= SCREEN JITTER ================= */
+setInterval(()=>{
+  document.body.style.transform=
+    `translate(${Math.random()*3-1.5}px,${Math.random()*3-1.5}px)
+     rotate(${Math.random()*0.6-0.3}deg)`;
+},40);
+
+/* ================= ARG CLUES ================= */
+const clues=[
+  "DROP_COUNT=13",
+  "PIECE_01=VVS_HOODIE",
+  "PIECE_02=DOUBLE_DUFFLE",
+  "PIECE_03=THE_SWEATS",
+  "P13",
+  "HEAVY",
+  "WEIGHT",
+  "CONCRETE_LOCATION=LA",
+  "FREE_BOX_EXISTS",
+  "HANDLE_WITH_CARE",
+  "DM_REQUIRED",
+  "INSTRUCTIONS_UNLOCKED_BY_DM_ONLY",
+  "ERROR:LUXURY_NOT_FOUND"
+];
+
+/* ================= INTRO ================= */
+async function typeDelete(text){
+  center.textContent="";
+  for(const c of text){
+    center.textContent+=c;
+    type();
+    await sleep(30);
+  }
+  await sleep(400);
+  while(center.textContent.length){
+    center.textContent=center.textContent.slice(0,-1);
+    await sleep(20);
+  }
+}
+
+async function intro(){
+  const lines=[
+    ".....",
+    "Who are you?",
+    "How did you get here?",
+    "This page is not indexed",
+    "YOU SHOULD NOT BE HERE"
+  ];
+  for(const l of lines) await typeDelete(l);
+  await meltdown();
+}
+
+/* ================= MELTDOWN ================= */
+function randomLine(){
+  const chars="!@#$%^&*()_+=-[]{}<>?/\\|~013";
+  let line="";
+  for(let i=0;i<120;i++){
+    line+=Math.random()<0.025
+      ? clues[Math.floor(Math.random()*clues.length)]
+      : chars[Math.floor(Math.random()*chars.length)];
+  }
+  return line;
+}
+
+const overlayClues=["OH NO","P13","HEAVY","WEIGHT","DM_REQUIRED","PASSCODE?"];
+
+function flickerOverlay(){
+  overlay.textContent=overlayClues[Math.floor(Math.random()*overlayClues.length)];
+  overlay.style.transform=
+    `translate(${Math.random()*12-6}px,${Math.random()*12-6}px)
+     rotate(${Math.random()*4-2}deg)
+     scale(${1+Math.random()*0.1})`;
+}
+
+async function meltdown(){
+  center.style.display="none";
+  terminal.style.display="block";
+  overlay.style.display="block";
+
+  for(let i=0;i<220;i++){
+    terminal.textContent+=randomLine()+"\n";
+    flickerOverlay();
+    type();
+    if(i%14===0) popup();
+    if(i%32===0) undo();
+    await sleep(22);
+  }
+
+  document.querySelectorAll(".popup").forEach(p=>p.remove());
+  overlay.style.display="none";
+
+  terminal.textContent+="\n>> FATAL SYSTEM ERROR\n";
+  terminal.textContent+=">> INSTRUCTIONS_UNLOCKED_BY_DM_ONLY\n";
+  terminal.textContent+=">> SYSTEM REBOOTING...\n\n";
+
+  await reboot();
+}
+
+/* ================= POPUPS ================= */
+function popup(){
+  const p=document.createElement("div");
+  p.className="popup";
+  p.style.top=Math.random()*70+"%";
+  p.style.left=Math.random()*70+"%";
+  p.innerHTML=`
+    <div class="title">Pseudo Error</div>
+    <div class="content">
+      A PSEUDO ERROR HAS OCCURRED.<br>
+      LUXURY FILES CORRUPTED.<br>
+      DO NOT PANIC.
+    </div>`;
+  document.body.appendChild(p);
+  drag(p);
+  setTimeout(()=>p.remove(),4000);
+}
+
+function drag(el){
+  let x=0,y=0,down=false;
+  el.querySelector(".title").onmousedown=e=>{
+    down=true;
+    x=e.clientX-el.offsetLeft;
+    y=e.clientY-el.offsetTop;
+  };
+  document.onmousemove=e=>{
+    if(down){
+      el.style.left=e.clientX-x+"px";
+      el.style.top=e.clientY-y+"px";
+    }
+  };
+  document.onmouseup=()=>down=false;
+}
+
+/* ================= REBOOT ================= */
+async function reboot(){
+  terminal.textContent="";
+  let percent=0;
+  while(percent<100){
+    let bars=Math.floor(percent/3);
+    terminal.textContent=
+      "SYSTEM REBOOTING\n\n["+
+      "█".repeat(bars)+
+      " ".repeat(33-bars)+
+      "] "+Math.floor(percent)+"%";
+    percent+=Math.random()*2;
+    await sleep(160);
+    if(percent>99){
+      terminal.textContent+="\n\nestimated time 6 hours 43 minutes";
+      await sleep(3000);
+      terminal.textContent=terminal.textContent.replace(
+        "estimated time 6 hours 43 minutes",
+        "just kidding"
+      );
+      await sleep(3000);
+      break;
+    }
+  }
+  await face();
+}
+
+/* ================= FACE ================= */
+async function face(){
+  terminal.textContent="";
+  const happy=
+`   _____
+  /     \\
+ |  o o  |
+ |   ^   |
+ | \\___/ |
+  \\_____/`;
+  const sad=
+`   _____
+  /     \\
+ |  o o  |
+ |   ^   |
+ | /___\\ |
+  \\_____/`;
+
+  terminal.textContent=happy;
+  await sleep(700);
+  terminal.textContent=sad;
+  await sleep(500);
+  terminal.textContent=happy;
+  await sleep(700);
+  await countdown();
+}
+
+/* ================= COUNTDOWN ================= */
+async function countdown(){
+  document.body.innerHTML="";
+  const c=document.createElement("div");
+  c.style.position="absolute";
+  c.style.top="50%";
+  c.style.left="50%";
+  c.style.transform="translate(-50%,-50%)";
+  c.style.fontSize="6rem";
+  document.body.appendChild(c);
+
+  const drop=new Date("2026-03-13T00:00:00").getTime();
+  setInterval(()=>{
+    const d=drop-Date.now();
+    if(d<=0){c.textContent="00 : 00 : 00 : 00";return;}
+    c.textContent=
+      String(Math.floor(d/86400000)).padStart(2,"0")+" : "+
+      String(Math.floor(d/3600000)%24).padStart(2,"0")+" : "+
+      String(Math.floor(d/60000)%60).padStart(2,"0")+" : "+
+      String(Math.floor(d/1000)%60).padStart(2,"0");
+  },1000);
+}
+
+/* ================= START ================= */
+intro();
+</script>
+</body>
+</html>

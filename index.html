@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PSEUDO 13 ARG</title>
+<title>PSEUDO13</title>
+
 <style>
 html,body{
-  margin:0; padding:0; height:100%; overflow:hidden;
+  margin:0;
+  padding:0;
+  height:100%;
   background:black;
+  overflow:hidden;
   font-family:"Courier New", monospace;
   color:#00ff00;
   position:relative;
@@ -25,53 +29,239 @@ body::before{
   z-index:0;
 }
 
+/* Screen shake animation */
+@keyframes screenShake{
+  0%{transform:translate(0, 0);}
+  10%{transform:translate(-5px, 5px);}
+  20%{transform:translate(5px, -5px);}
+  30%{transform:translate(-5px, -5px);}
+  40%{transform:translate(5px, 5px);}
+  50%{transform:translate(-5px, 5px);}
+  60%{transform:translate(5px, -5px);}
+  70%{transform:translate(-5px, -5px);}
+  80%{transform:translate(5px, 5px);}
+  90%{transform:translate(-5px, 5px);}
+  100%{transform:translate(0, 0);}
+}
+
+body.shaking{
+  animation:screenShake 0.5s infinite;
+}
+
+/* Blue/white flash overlay */
+#flashOverlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:998;
+  pointer-events:none;
+  animation:blueWhiteFlash 0.3s infinite;
+}
+
+@keyframes blueWhiteFlash{
+  0%{background:blue; opacity:0.3;}
+  50%{background:white; opacity:0.4;}
+  100%{background:blue; opacity:0.3;}
+}
+
 /* CRT scanlines */
 #scanlines{
-  position:fixed; inset:0;
-  background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 2px, transparent 4px);
-  pointer-events:none; z-index:999;
+  position:fixed;
+  inset:0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.02) 0px,
+      rgba(255,255,255,0.02) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+  pointer-events:none;
+  z-index:999;
 }
 
 /* Centered typing */
-#center{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); white-space:pre; text-align:center; font-size:3rem; z-index:10;}
-.cursor::after{content:"_"; animation:blink 1s infinite;}
+#center{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  white-space:pre;
+  text-align:center;
+  font-size:3rem;
+  z-index:10;
+}
+.cursor::after{
+  content:"_";
+  animation:blink 1s infinite;
+}
 @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
 
 /* Terminal dump */
-#terminal{display:none; padding:10px; white-space:pre-wrap; font-size:1.2rem; line-height:1.2; position:absolute; width:100%; height:100%; overflow:hidden; z-index:5;}
+#terminal{
+  display:none;
+  padding:10px;
+  white-space:pre-wrap;
+  font-size:1.2rem;
+  line-height:1.2;
+  position:absolute;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  z-index:5;
+}
 
 /* Overlay */
-#overlay{display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:8rem; font-weight:bold; z-index:50; pointer-events:none;}
+#overlay{
+  display:none;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-size:8rem;
+  font-weight:bold;
+  z-index:50;
+  pointer-events:none;
+}
 
-/* Popups */
-.popup{position:absolute; width:360px; height:auto; background:#f5f5f5; border:2px solid #888; box-shadow:6px 6px 12px #000; z-index:100; padding-bottom:10px;}
-.popup .title{background:#003cff; color:white; padding:4px; cursor:move; display:flex; justify-content:space-between; align-items:center;}
-.popup .title .buttons{display:flex; gap:4px;}
-.popup .title .button{width:16px; height:16px; text-align:center; font-weight:bold; cursor:pointer; color:white; line-height:16px; border-radius:2px;}
+/* Popups with shake and glitch */
+.popup{
+  position:absolute;
+  width:360px;
+  height:auto;
+  background:#f5f5f5;
+  border:2px solid #888;
+  box-shadow:6px 6px 12px #000;
+  z-index:100;
+  padding-bottom:10px;
+  animation:popupGlitch 0.15s infinite;
+}
+@keyframes popupGlitch{
+  0%{transform:translate(0, 0) rotate(0deg) scale(1);}
+  15%{transform:translate(-4px, 3px) rotate(-1.5deg) scale(0.98);}
+  30%{transform:translate(3px, -4px) rotate(1.2deg) scale(1.02);}
+  45%{transform:translate(-3px, 4px) rotate(-0.8deg) scale(0.99);}
+  60%{transform:translate(4px, -3px) rotate(1deg) scale(1.01);}
+  75%{transform:translate(-2px, 2px) rotate(-0.5deg) scale(0.98);}
+  100%{transform:translate(0, 0) rotate(0deg) scale(1);}
+}
+.popup .title{
+  background:#003cff;
+  color:white;
+  padding:4px;
+  cursor:move;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.popup .title .buttons{
+  display:flex;
+  gap:4px;
+}
+.popup .title .button{
+  width:16px;
+  height:16px;
+  text-align:center;
+  font-weight:bold;
+  cursor:pointer;
+  color:white;
+  line-height:16px;
+  border-radius:2px;
+}
 .popup .button.close{background:red;}
 .popup .button.full{background:green;}
-.popup .content{padding:8px; font-size:0.85rem; font-weight:bold; color:black; text-align:center; white-space:pre;}
+.popup .content{
+  padding:8px;
+  font-size:0.85rem;
+  font-weight:bold;
+  color:black;
+  text-align:center;
+  white-space:pre;
+}
 
 /* Countdown + loading container */
-#rebootContainer{display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:90vw; color:#00ff00; font-family:"Courier New", monospace; z-index:10;}
-#pseudo13{font-size:6rem; color:#00ff00; margin-bottom:20px; transform-style: preserve-3d; animation:spin 8s linear infinite;}
-@keyframes spin{from{transform:rotateY(0deg);} to{transform:rotateY(360deg);}}
-#systemReboot{font-size:3rem; margin-bottom:10px;}
-#loadingBarContainer{width:100%; background:black; height:40px; margin-top:20px; display:flex; gap:2px;}
-.loadingBarSegment{flex:1; background:green; height:100%; width:0%;}
-#loadingText{font-size:2rem; margin-top:10px;}
-#face{font-size:6rem; margin-top:10px;}
+#rebootContainer{
+  display:none;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  width:90vw;
+  color:#00ff00;
+  font-family:"Courier New", monospace;
+  z-index:10;
+}
+#pseudo13{
+  font-size:6rem;
+  color:#00ff00;
+  margin-bottom:20px;
+  transform-style: preserve-3d;
+  animation:spin 8s linear infinite;
+}
+@keyframes spin{
+  from{transform:rotateY(0deg);}
+  to{transform:rotateY(360deg);}
+}
+#systemReboot{
+  font-size:1.2rem;
+  margin-bottom:10px;
+}
+#loadingBarContainer{
+  width:100%;
+  background:black;
+  height:40px;
+  margin-top:20px;
+  display:flex;
+  gap:2px;
+  position:relative;
+}
+.loadingBarSegment{
+  flex:1;
+  background:green;
+  height:100%;
+  width:100%;
+  opacity:0;
+  transition:opacity 0.3s;
+}
+.loadingBarSegment.active{
+  opacity:1;
+}
+#loadingText{
+  font-size:1rem;
+  margin-top:10px;
+}
+#face{
+  font-size:3rem;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  z-index:20;
+  margin:0;
+  text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+  animation:glitchFace 0.2s infinite;
+}
+@keyframes glitchFace{
+  0%{transform:translate(-50%, -50%);}
+  25%{transform:translate(calc(-50% + 5px), calc(-50% + 3px));}
+  50%{transform:translate(calc(-50% - 4px), calc(-50% - 3px));}
+  75%{transform:translate(calc(-50% + 3px), calc(-50% - 4px));}
+  100%{transform:translate(-50%, -50%);}
+}
 </style>
 </head>
+
 <body>
+<div id="flashOverlay"></div>
 <div id="scanlines"></div>
 <div id="center" class="cursor"></div>
 <div id="terminal"></div>
 <div id="overlay">OH NO</div>
 
 <div id="rebootContainer">
-  <div id="pseudo13">13 <span style="display:inline-block;">PSEUDO</span> 13</div>
-  <div id="systemReboot">SYSTEM REBOOTING...</div>
+  <div id="pseudo13">PSEUDO</div>
+  <div id="systemReboot">SYSTEM REBOOTING... <span id="percentage">0%</span></div>
   <div id="loadingBarContainer"></div>
   <div id="loadingText"></div>
   <pre id="face"></pre>
@@ -79,10 +269,25 @@ body::before{
 
 <script>
 const ctx=new(window.AudioContext||window.webkitAudioContext)();
-function beep(f=1200,t=0.04,v=0.08){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f; g.gain.value=v;o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+t);}
+function beep(f=1200,t=0.04,v=0.08){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+t);
+}
 function undo(){beep(800,0.2,0.1);}
 function type(){beep(1600,0.03,0.07);}
 function dialup(){beep(1000,0.05,0.1);}
+function errorSound(){
+  // Windows error sound simulation
+  beep(800,0.1,0.15);
+  setTimeout(()=>beep(600,0.15,0.15),100);
+}
+function ohNoSound(){
+  // "OH NO" sound effect
+  beep(600,0.3,0.2);
+  setTimeout(()=>beep(500,0.3,0.2),200);
+}
 
 const center=document.getElementById("center");
 const terminal=document.getElementById("terminal");
@@ -91,24 +296,49 @@ const rebootContainer=document.getElementById("rebootContainer");
 const faceEl=document.getElementById("face");
 const loadingBarContainer=document.getElementById("loadingBarContainer");
 const loadingText=document.getElementById("loadingText");
+const flashOverlay=document.getElementById("flashOverlay");
+const percentageEl=document.getElementById("percentage");
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 const clues=[
-  "drop_count=13","piece_01=vvs_hoodie","piece_02=double_duffle","piece_03=the_sweats",
-  "p13","heavy","weight","concrete_location=la","free_box_exists","handle_with_care",
-  "dm_required","instructions_unlocked_by_dm_only","error:luxury_not_found"
+  "drop_count=13",
+  "piece_01=vvs_hoodie",
+  "piece_02=double_duffle",
+  "piece_03=the_sweats",
+  "p13",
+  "heavy",
+  "weight",
+  "concrete_location=la",
+  "free_box_exists",
+  "handle_with_care",
+  "dm_required",
+  "instructions_unlocked_by_dm_only",
+  "error:luxury_not_found"
 ];
 
 async function typeDelete(text){
   center.textContent="";
-  for(const c of text){center.textContent+=c; type(); await sleep(120);}
+  for(const c of text){
+    center.textContent+=c;
+    type();
+    await sleep(120);
+  }
   await sleep(400);
-  while(center.textContent.length){center.textContent=center.textContent.slice(0,-1); await sleep(40);}
+  while(center.textContent.length){
+    center.textContent=center.textContent.slice(0,-1);
+    await sleep(40);
+  }
 }
 
 async function intro(){
-  const lines=[".....","who are you?","how did you get here?","this page is not indexed","YOU SHOULD NOT BE HERE"];
+  const lines=[
+    ".....",
+    "who are you?",
+    "how did you get here?",
+    "this page is not indexed",
+    "YOU SHOULD NOT BE HERE"
+  ];
   for(const l of lines) await typeDelete(l);
   await meltdown();
 }
@@ -117,30 +347,51 @@ function randomLine(){
   const chars="!@#$%^&*()_+=-[]{}<>?/\\|~013";
   let line="";
   for(let i=0;i<120;i++){
-    line+=Math.random()<0.025?clues[Math.floor(Math.random()*clues.length)]:chars[Math.floor(Math.random()*chars.length)];
+    line+=Math.random()<0.025
+      ? clues[Math.floor(Math.random()*clues.length)]
+      : chars[Math.floor(Math.random()*chars.length)];
   }
   return line;
 }
 
 const overlayClues=["OH NO","P13","HEAVY","WEIGHT","DM_REQUIRED","PASSCODE?"];
-function flickerOverlay(){overlay.textContent=overlayClues[Math.floor(Math.random()*overlayClues.length)]; overlay.style.transform=`translate(${Math.random()*12-6}px,${Math.random()*12-6}px) rotate(${Math.random()*4-2}deg) scale(${1+Math.random()*0.1})`; }
+function flickerOverlay(){
+  overlay.textContent=overlayClues[Math.floor(Math.random()*overlayClues.length)];
+  overlay.style.transform=`translate(${Math.random()*12-6}px,${Math.random()*12-6}px)
+                           rotate(${Math.random()*4-2}deg)
+                           scale(${1+Math.random()*0.1})`;
+}
 
 async function meltdown(){
   center.style.display="none";
   terminal.style.display="block";
   overlay.style.display="block";
+  
+  // Start screen shake and flash
+  document.body.classList.add("shaking");
+  flashOverlay.style.display="block";
+  
+  // Play "OH NO" sound at start
+  ohNoSound();
 
   for(let i=0;i<220;i++){
     terminal.textContent+=randomLine()+"\n";
     flickerOverlay();
     type();
-    if(i%14===0) popup();
+    if(i%14===0) {
+      popup();
+      errorSound(); // Play error sound with each popup
+    }
     if(i%32===0) undo();
     await sleep(22);
   }
 
   document.querySelectorAll(".popup").forEach(p=>p.remove());
   overlay.style.display="none";
+  
+  // Stop screen shake and flash
+  document.body.classList.remove("shaking");
+  flashOverlay.style.display="none";
 
   terminal.textContent+="\n>> FATAL SYSTEM ERROR\n";
   terminal.textContent+=">> INSTRUCTIONS_UNLOCKED_BY_DM_ONLY\n";
@@ -149,69 +400,175 @@ async function meltdown(){
   await reboot();
 }
 
-const happyFace=`   _____\n  /     \\\n |  o o  |\n |   ^   |\n | \\___/ |\n  \\_____/`;
-const sadFace=`   _____\n  /     \\\n |  o o  |\n |   ^   |\n | /___\\ |\n  \\_____/`;
+const happyFace=
+`      _____
+     /     \\
+    |  o o  |
+    |   ^   |
+    | \\___/ |
+     \\_____/`;
+const sadFace=
+`      _____
+     /     \\
+    |  o o  |
+    |   ^   |
+    | /___\\ |
+     \\_____/`;
 
 function popup(){
-  const p=document.createElement("div"); p.className="popup";
-  p.style.top=Math.random()*70+"%"; p.style.left=Math.random()*70+"%";
+  const p=document.createElement("div");
+  p.className="popup";
+  p.style.top=Math.random()*70+"%";
+  p.style.left=Math.random()*70+"%";
+
   const face = Math.random()<0.5 ? happyFace : sadFace;
-  p.innerHTML=`<div class="title">Pseudo Error<div class="buttons"><div class="button close">X</div><div class="button full">&#9723;</div></div></div>
-<div class="content">a pseudo error has occurred.<br>luxury files corrupted.<br>${face}<br>do not panic.</div>`;
-  document.body.appendChild(p); drag(p); setTimeout(()=>p.remove(),4000);
+
+  p.innerHTML=`
+    <div class="title">Pseudo Error
+      <div class="buttons">
+        <div class="button close">X</div>
+        <div class="button full">&#9723;</div>
+      </div>
+    </div>
+    <div class="content">
+      a pseudo error has occurred.<br>
+      luxury files corrupted.<br>
+      ${face}<br>
+      do not panic.
+    </div>`;
+  document.body.appendChild(p);
+  drag(p);
+  setTimeout(()=>p.remove(),4000);
+
   p.querySelector(".close").onclick=()=>p.remove();
 }
 
 function drag(el){
   let x=0,y=0,down=false;
-  el.querySelector(".title").onmousedown=e=>{down=true;x=e.clientX-el.offsetLeft;y=e.clientY-el.offsetTop;};
-  document.onmousemove=e=>{if(down){el.style.left=e.clientX-x+"px"; el.style.top=e.clientY-y+"px";}};
+  el.querySelector(".title").onmousedown=e=>{
+    down=true;
+    x=e.clientX-el.offsetLeft;
+    y=e.clientY-el.offsetTop;
+  };
+  document.onmousemove=e=>{
+    if(down){
+      el.style.left=e.clientX-x+"px";
+      el.style.top=e.clientY-y+"px";
+    }
+  };
   document.onmouseup=()=>down=false;
 }
 
 async function reboot(){
-  terminal.style.display="none"; rebootContainer.style.display="block";
-  const barCount=50; loadingBarContainer.innerHTML="";
-  const bars=[];
-  for(let i=0;i<barCount;i++){const b=document.createElement("div"); b.className="loadingBarSegment"; loadingBarContainer.appendChild(b); bars.push(b);}
-  let percent=0; const startTime=Date.now();
+  terminal.style.display="none";
+  rebootContainer.style.display="block";
 
-  while(percent<99){
-    if(percent<100){bars[Math.floor(percent/barCount*barCount)].style.background="green";}
-    percent+=1; beep(1200,0.05,0.08); // beep per bar
-    const elapsed=(Date.now()-startTime)/1000; const remaining=Math.max(0,(barCount-percent)*(elapsed/barCount));
-    const hrs=Math.floor(remaining/3600); const mins=Math.floor((remaining%3600)/60); const secs=Math.floor(remaining%60);
-    loadingText.textContent=`estimated time ${hrs}h ${mins}m ${secs}s`;
-    await sleep(180);
+  loadingBarContainer.innerHTML="";
+  const bars=[];
+  for(let i=0;i<50;i++){
+    const bar=document.createElement("div");
+    bar.className="loadingBarSegment";
+    loadingBarContainer.appendChild(bar);
+    bars.push(bar);
   }
 
-  loadingText.textContent="estimated time 6h 43m 0s";
+  const totalBars = 50;
+  const loadDuration = 31000; // 31 seconds
+  const timePerBar = loadDuration / totalBars;
+  const startTime = Date.now();
+  
+  let currentBar = 0;
+  
+  while(currentBar < totalBars){
+    bars[currentBar].classList.add('active');
+    
+    const percent = Math.floor((currentBar / totalBars) * 100);
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.max(0, loadDuration - elapsed);
+    const remainingSecs = Math.ceil(remaining / 1000);
+    
+    percentageEl.textContent = `${percent}%`;
+    loadingText.textContent = `estimated time ${remainingSecs}s`;
+    
+    currentBar++;
+    await sleep(timePerBar);
+  }
+  
+  percentageEl.textContent = `99%`;
+  loadingText.textContent = `estimated time 0s`;
+  await sleep(300);
+
   await faceStage();
 }
 
 async function faceStage(){
-  faceEl.textContent=happyFace; await sleep(700);
-  faceEl.textContent=sadFace; await sleep(500);
-  faceEl.textContent=happyFace; await sleep(700);
+  const happy=
+`   _____
+  /     \\
+ |  o o  |
+ |   ^   |
+ | \\___/ |
+  \\_____/`;
+  const sad=
+`   _____
+  /     \\
+ |  o o  |
+ |   ^   |
+ | /___\\ |
+  \\_____/`;
+
+  faceEl.textContent=happy;
+  await sleep(700);
+  faceEl.textContent=sad;
+  await sleep(500);
+  faceEl.textContent=happy;
+  await sleep(700);
   await countdown();
 }
 
 async function countdown(){
   rebootContainer.innerHTML="";
-  const pseudoEl=document.createElement("div"); pseudoEl.id="pseudo13"; pseudoEl.textContent="13 PSEUDO 13"; rebootContainer.appendChild(pseudoEl);
-  const sys=document.createElement("div"); sys.id="systemReboot"; sys.textContent="SYSTEM REBOOTING..."; rebootContainer.appendChild(sys);
-  const loadingContainer=document.createElement("div"); loadingContainer.id="loadingBarContainer"; rebootContainer.appendChild(loadingContainer);
-  const loadingTextEl=document.createElement("div"); loadingTextEl.id="loadingText"; rebootContainer.appendChild(loadingTextEl);
-  const faceP=document.createElement("pre"); faceP.id="face"; rebootContainer.appendChild(faceP);
+  const pseudoEl=document.createElement("div");
+  pseudoEl.id="pseudo13";
+  pseudoEl.textContent="PSEUDO";
+  rebootContainer.appendChild(pseudoEl);
 
-  const target=new Date("2026-03-13T00:00:00").getTime();
+  const sys=document.createElement("div");
+  sys.id="systemReboot";
+  sys.innerHTML='SYSTEM REBOOTING... <span id="percentage">100%</span>';
+  rebootContainer.appendChild(sys);
+
+  const loadingContainer=document.createElement("div");
+  loadingContainer.id="loadingBarContainer";
+  rebootContainer.appendChild(loadingContainer);
+
+  const bars=[];
+  for(let i=0;i<50;i++){
+    const b=document.createElement("div");
+    b.className="loadingBarSegment active";
+    loadingContainer.appendChild(b);
+    bars.push(b);
+  }
+
+  const loadingTextEl=document.createElement("div");
+  loadingTextEl.id="loadingText";
+  rebootContainer.appendChild(loadingTextEl);
+
+  const faceP=document.createElement("pre");
+  faceP.id="face";
+  rebootContainer.appendChild(faceP);
+
+  const drop=new Date("2026-03-13T00:00:00").getTime();
+
   setInterval(()=>{
-    const now=Date.now(); const diff=target-now; if(diff<0)return;
-    const d=Math.floor(diff/86400000).toString().padStart(2,"0");
-    const h=Math.floor((diff/3600000)%24).toString().padStart(2,"0");
-    const m=Math.floor((diff/60000)%60).toString().padStart(2,"0");
-    const s=Math.floor((diff/1000)%60).toString().padStart(2,"0");
-    loadingTextEl.textContent=`Countdown: ${d}:${h}:${m}:${s}`;
+    const now=Date.now();
+    const d=drop-now;
+    if(d<0)return;
+    const days=Math.floor(d/86400000).toString().padStart(2,"0");
+    const hrs=Math.floor((d/3600000)%24).toString().padStart(2,"0");
+    const mins=Math.floor((d/60000)%60).toString().padStart(2,"0");
+    const secs=Math.floor((d/1000)%60).toString().padStart(2,"0");
+    loadingTextEl.textContent=`Countdown: ${days}:${hrs}:${mins}:${secs}`;
   },1000);
 }
 
